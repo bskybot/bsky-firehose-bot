@@ -10,5 +10,5 @@ export type AppContext = {
 export type Config = {
   subscriptionEndpoint: string
   subscriptionReconnectDelay: number
-  replyBots: ReplyBot[]
+  bots: ReplyBot[]
 }

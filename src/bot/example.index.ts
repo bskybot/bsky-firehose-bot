@@ -7,6 +7,7 @@ const nameOfYourBot1: ReplyBot = {
     replies: [
         {
             keyword: "keyword1", 
+            exclude: ["badword1", "badword2"],
             messages: ["reply1", "reply2", "reply3"]
         },
         {
@@ -20,6 +21,10 @@ const nameOfYourBot2: ReplyBot = {
     username: "YourBotUsername", 
     password: "YourBotPassword",
     did: "did:plc:YourBotDid",
+    consentDm: {
+        consentQuestion: "Do you consent to my terms, answer with `Yes`.",
+        consentAnswer: "Yes"
+    },
     replies: [
         {
             keyword: "another keywords phrase", 

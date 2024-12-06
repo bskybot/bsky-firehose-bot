@@ -10,7 +10,7 @@ pnpm i --frozen-lockfile
 ## Configure bot (and firehose subscription)
 ### Bot(s)
 Rename `bot/example.index.ts` to `bot/index.ts` and edit with your preferred editor.
-Note that you can define multiple bots. If you provide multiple reply messages for a keyword the bot will randomly select one of the messages.
+Note that you can define multiple bots. If you provide multiple reply messages for a keyword the bot will randomly select one of the messages. If you give an array of strings to exclude, the bot won't reply if the text contains one of the words. Also a consent dm can be defined, that has to be answered correctly before the bot reacts to a post.
 
 A bot be defined as followed: 
 ```
@@ -21,6 +21,7 @@ const nameOfYourBot1: Bot = {
     replies: [
         {
             keyword: "keyword1", 
+            exclude: ["badword1", "badword2"],
             messages: ["reply1", "reply2", "reply3"]
         },
         {
@@ -34,6 +35,10 @@ const nameOfYourBot2: Bot = {
     username: "YourBotUsername", 
     password: "YourBotPassword",
     did: "did:plc:YourBotDid",
+    consentDm: {
+        consentQuestion: "Do you consent to my terms, answer with `Yes`.",
+        consentAnswer: "Yes"
+    },
     replies: [
         {
             keyword: "another keywords phrase", 
@@ -48,17 +53,15 @@ Don't miss to add the bot to the export in `bot/index.ts`:
 export const bots: Bot[] = [nameOfYourBot1, nameOfYourBot2];
 ```
 
-### Firehose
-If you want to make changes to the firehose subscription, add an `.env` file as followed:
-```
-FEEDGEN_SUBSCRIPTION_ENDPOINT="YourSubscriptionEndpoint"
-FEEDGEN_SUBSCRIPTION_RECONNECT_DELAY=3000 //add the number you want!
-```
-
 ## Build first and run the bot
 ```
 pnpm build
 node dist/index.js
+```
+
+Or start without building
+```
+pnpm start
 ```
 
 Or use a tool like `pm2` to run in the background.
