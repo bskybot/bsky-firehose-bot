@@ -16,7 +16,7 @@ export function buildReplyToPost (root: UriCid, parent: UriCid, message: string)
 
 export function websocketToFeedEntry(data: WebSocket.Data): FeedEntry | null {
     const message = data as WebsocketMessage;
-    if(message.commit.operation != "create") {
+    if(message?.commit?.operation != "create" || !message?.commit?.record['$type']) {
         return null;
     }
     const messageUri = `at://${message.did}/${message.commit.record['$type']}/${message.commit.rkey}`;

@@ -1,4 +1,5 @@
 import WebSocket from 'ws';
+import { Logger } from './logger';
 
 interface WebSocketClientOptions {
     url: string;
@@ -24,7 +25,7 @@ class WebSocketClient {
         this.ws = new WebSocket(this.url);
 
         this.ws.on('open', () => {
-            console.log('WebSocket connected');
+            Logger.info('WebSocket connected');
             this.startHeartbeat();
             this.onOpen();
         });
@@ -34,12 +35,12 @@ class WebSocketClient {
         });
 
         this.ws.on('error', (error) => {
-            console.error('WebSocket error:', error);
+            Logger.error('WebSocket error:', error);
             this.onError(error);
         });
 
         this.ws.on('close', () => {
-            console.log('WebSocket disconnected');
+            Logger.info('WebSocket disconnected');
             this.stopHeartbeat();
             this.onClose();
             this.reconnect();

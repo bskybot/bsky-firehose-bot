@@ -1,5 +1,6 @@
 import WebSocket from 'ws';
 import WebSocketClient from '../util/websocketClient';
+import { Logger } from '../util/logger';
 
 export class JetstreamSubscription extends WebSocketClient {
     constructor(
@@ -11,7 +12,7 @@ export class JetstreamSubscription extends WebSocketClient {
     }
 
     protected onOpen() {
-        console.log('Connected to Jetstream server.');
+        Logger.info('Connected to Jetstream server.');
     }
 
     protected onMessage(data: WebSocket.Data) {
@@ -21,10 +22,10 @@ export class JetstreamSubscription extends WebSocketClient {
     }
 
     protected onError(error: Error) {
-        console.error('Jetstream encountered an error:', error);
+        Logger.error('Jetstream encountered an error:', error);
     }
 
     protected onClose() {
-        console.log('Jetstream connection closed.');
+        Logger.info('Jetstream connection closed.');
     }
 }

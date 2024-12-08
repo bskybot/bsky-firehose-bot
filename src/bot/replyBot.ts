@@ -5,6 +5,7 @@ import { buildReplyToPost, websocketToFeedEntry } from '../util/botFunctions';
 import { JetstreamSubscription } from '../feed/jetstream';
 import DatabaseHandler from '../util/databaseHandler';
 import type { ConvoView } from '@atproto/api/dist/client/types/chat/bsky/convo/defs';
+import { Logger } from '../util/logger';
 
 export class ReplyBotAgent extends BskyAgent {
     private jetstream: JetstreamSubscription | null = null;
@@ -36,7 +37,7 @@ export class ReplyBotAgent extends BskyAgent {
                 cursor = response.data.cursor;
             } while (cursor);
         } catch (error) {
-            console.error("Error while fetching followers:", error);
+            Logger.error("Error while fetching followers:", error);
         }
 
         return followers;
@@ -57,7 +58,7 @@ export class ReplyBotAgent extends BskyAgent {
 
     async updateJetstream(dids: string[]): Promise<void> {
         if (!dids.length) {
-            console.warn("No DIDs provided for Jetstream.");
+            Logger.warn("No DIDs provided for Jetstream.");
             if(this.jetstream) {
                 this.jetstream.close();
                 this.jetstream = null;
@@ -75,7 +76,7 @@ export class ReplyBotAgent extends BskyAgent {
                     wantedDids: dids 
                 },
             }));
-            console.info(`Jetstream updated for bot: ${this.bot.username}`);
+            Logger.info(`Jetstream updated for bot: ${this.bot.username}`);
         }
     }
 
@@ -99,13 +100,13 @@ export class ReplyBotAgent extends BskyAgent {
                     const dmSent = await this.sendMessage(convo.id, this.bot.consentDm!.consentQuestion);
                     if (!dmSent?.error) {
                         await this.database!.updateDmSentDate(this.bot.username, did);
-                        console.info(`Consent DM sent to: ${did}`);
+                        Logger.info(`Consent DM sent to: ${did}`);
                     }
                 } else if(convo.lastMessage?.text === this.bot.consentDm?.consentAnswer) {
                     await this.database?.updateConsentDate(this.bot.username, did);
                 }
             } catch (error) {
-                console.error(`Failed to send DM to ${did}:`, error);
+                Logger.error(`Failed to send DM to ${did}:`, error);
             }
         });
 
@@ -150,7 +151,7 @@ export class ReplyBotAgent extends BskyAgent {
         );
 
         await Promise.all([this.like(post.uri, post.cid), this.post(reply)]);
-        console.info(`${this.bot.username} replied to post: ${post.uri}`);
+        Logger.info(`Replied to post: ${post.uri}`, this.bot.username);
     }
 }
 
@@ -176,7 +177,7 @@ export const useReplyBotAgent = async (bot: ReplyBot, interval = 20000): Promise
 
         return agent;
     } catch (error) {
-        console.error("Failed to initialize bot:", error);
+        Logger.error("Failed to initialize bot:", error);
         return null;
     }
 };

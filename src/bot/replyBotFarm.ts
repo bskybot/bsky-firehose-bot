@@ -1,5 +1,5 @@
-import { JetstreamSubscription } from "../feed/jetstream";
 import { ReplyBot } from "../types/bot"
+import { Logger } from "../util/logger";
 import { ReplyBotAgent, useReplyBotAgent } from "./replyBot"
 
 export class ReplyBotFarm {   
@@ -18,7 +18,7 @@ export class ReplyBotFarm {
                     try {
                         return await useReplyBotAgent(bot as ReplyBot);
                     } catch (error) {
-                        console.error(`Error creating agent for bot ${bot.username}:`, error);
+                        Logger.error(`Error creating agent for bot ${bot.username}:`, error);
                         return null; // Fehlerhafte Agenten ausschließen
                     }
                 })
