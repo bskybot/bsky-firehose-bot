@@ -60,7 +60,7 @@ export class ReplyBotAgent extends BskyAgent {
         if (!dids.length) {
             Logger.warn("No DIDs provided for Jetstream.");
             if(this.jetstream) {
-                this.jetstream.close();
+                this.jetstream.close(true);
                 this.jetstream = null;
             }
             return;
