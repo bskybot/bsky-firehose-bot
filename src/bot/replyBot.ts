@@ -26,21 +26,30 @@ export class ReplyBotAgent extends BskyAgent {
         }
     }
 
-    async getAllFollowers(): Promise<string[]> {
-        const followers: string[] = [];
-        let cursor: string | undefined;
-
-        try {
-            do {
-                const response = await this.app.bsky.graph.getFollowers({ actor: this.bot.did, cursor });
-                followers.push(...response.data.followers.map(f => f.did));
-                cursor = response.data.cursor;
-            } while (cursor);
-        } catch (error) {
-            Logger.error("Error while fetching followers:", error);
+    async getAllFollowers(retries = 3): Promise<string[] | null> {
+        let attempts = 0;
+        while (attempts < retries) {
+            try {
+                const followers: string[] = [];
+                let cursor: string | undefined;
+    
+                do {
+                    const response = await this.app.bsky.graph.getFollowers({ actor: this.bot.did, cursor });
+                    followers.push(...response.data.followers.map(f => f.did));
+                    cursor = response.data.cursor;
+                } while (cursor);
+    
+                return followers; // Erfolgreich
+            } catch (error) {
+                attempts++;
+                Logger.warn(`Attempt ${attempts} failed to fetch followers:`, error);
+                if (attempts >= retries) {
+                    Logger.error("Failed to fetch followers after multiple attempts.");
+                    return null;
+                }
+            }
         }
-
-        return followers;
+        return null;
     }
 
     private async initializeJetstream(dids: string[]): Promise<void> {
@@ -155,7 +164,7 @@ export class ReplyBotAgent extends BskyAgent {
     }
 }
 
-export const useReplyBotAgent = async (bot: ReplyBot, interval = 20000): Promise<ReplyBotAgent | null> => {
+export const useReplyBotAgent = async (bot: ReplyBot, interval = 45000): Promise<ReplyBotAgent | null> => {
     const agent = new ReplyBotAgent({ service: 'https://bsky.social' }, bot);
 
     try {
@@ -169,6 +178,11 @@ export const useReplyBotAgent = async (bot: ReplyBot, interval = 20000): Promise
         }
         setInterval(async () => {
             const followers = await agent.getAllFollowers();
+            if (!followers) {
+                Logger.warn("Unable to fetch followers. Skipping this iteration.");
+                return;
+            }
+        
             if (bot.consentDm) {
                 await agent.handleConsent(followers);
             }
