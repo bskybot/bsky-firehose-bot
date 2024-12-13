@@ -39,13 +39,11 @@ class WebSocketClient {
             this.onError(error);
         });
 
-        this.ws.on('close', (permanently?: boolean) => {
+        this.ws.on('close', () => {
             Logger.info('WebSocket disconnected');
             this.stopHeartbeat();
             this.onClose();
-            if(!permanently) {
-                this.reconnect(); 
-            }
+            this.reconnect(); 
         });
     }
 
@@ -95,9 +93,9 @@ class WebSocketClient {
         }
     }
 
-    public close(permanently = false) {
+    public close() {
         if (this.ws) {
-            this.ws.close(permanently);
+            this.ws.close();
         }
     }
 }

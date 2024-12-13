@@ -6,7 +6,7 @@ const run = async () => {
   await ReplyBotFarm.create(bots);
 
   Logger.info(
-    `🤖 running feed generator`,
+    `🤖 bot 🤖 farm 🤖 running 🤖`,
   )
 }
 

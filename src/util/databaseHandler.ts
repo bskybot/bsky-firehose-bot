@@ -51,17 +51,14 @@ class DatabaseHandler {
     await this.db.run(query);
   }
 
-  async addRows(tableName: string, dids: string[]) {
+  async addRow(tableName: string, did: string) {
     if (!this.db) throw new Error('Database not connected.');
-    if (!dids.length) return; // Wenn das Array leer ist, abbrechen
-  
-    const placeholders = dids.map(() => "(?)").join(", "); // Platzhalter für jedes Element im Array
     const insertQuery = `
       INSERT OR IGNORE INTO "${tableName}" (did)
-      VALUES ${placeholders}
+      VALUES ${did}
     `;
   
-    await this.db.run(insertQuery, dids); // Einmalige Ausführung der Query mit allen Werten
+    await this.db.run(insertQuery); // Einmalige Ausführung der Query mit allen Werten
   }
   
   // Aktualisiert die Spalte "dm_sent" einer bestimmten Zeile
@@ -89,7 +86,7 @@ class DatabaseHandler {
     await this.db.run(query, [did]);
   }
 
-  async deleteNoFollower(tableName: string, dids: string[]): Promise<void> {
+  async deleteNoFollower(tableName: string, did: string): Promise<void> {
     if (!this.db) throw new Error('Database not connected.');
 
     // 1. Hole alle existierenden DIDs aus der Tabelle
@@ -97,28 +94,24 @@ class DatabaseHandler {
     const existingDidsRows: { did: string }[] = await this.db.all(existingDidsQuery);
     const existingDids = existingDidsRows.map(row => row.did);
   
-    // 2. Entferne Zeilen, deren DIDs nicht im Array vorhanden sind
-    const toDelete = existingDids.filter(did => !dids.includes(did));
-    await this.deleteRows(tableName, toDelete);
+    // 2. Entferne Zeile, falls DID nicht im Array vorhanden ist
+    const toDelete = !existingDids.includes(did);
+    if(toDelete) {
+      await this.deleteRow(tableName, did);
+    }
       
   }
 
-  // Lösche eine Vielzahl an Zeilen aus der Tabelle
-  async deleteRows(tableName: string, dids: string[]) {
+  // Lösche eine Zeile aus der Tabelle
+  async deleteRow(tableName: string, did: string) {
     if (!this.db) throw new Error('Database not connected.');
-  
-    if (!dids.length) return; // Wenn das Array leer ist, abbrechen
-  
-  
-    // Erstelle eine Liste mit Platzhaltern für die IN-Klausel
-    const placeholders = dids.map(() => '?').join(', ');
   
     const query = `
       DELETE FROM "${tableName}"
-      WHERE did IN (${placeholders})
+      WHERE did = ${did}
     `;
   
-    await this.db.run(query, dids);
+    await this.db.run(query);
   }
 
   // Überprüft, ob für die gegebene DID dm_sent gesetzt ist
