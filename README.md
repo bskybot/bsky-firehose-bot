@@ -10,11 +10,11 @@ pnpm i --frozen-lockfile
 ## Configure bot (and firehose subscription)
 ### Bot(s)
 Rename `bot/example.index.ts` to `bot/index.ts` and edit with your preferred editor.
-Note that you can define multiple bots. If you provide multiple reply messages for a keyword the bot will randomly select one of the messages. If you give an array of strings to exclude, the bot won't reply if the text contains one of the words. Also a consent dm can be defined, that has to be answered correctly before the bot reacts to a post.
+Note that you can define multiple bots. If you provide multiple reply messages for a keyword the bot will randomly select one of the messages. If you give an array of strings to exclude, the bot won't reply if the text contains one of the words. Also if typed as ConsentBot, a consent dm must be defined, that has to be answered correctly before the bot reacts to a post.
 
 A bot be defined as followed: 
 ```
-const nameOfYourBot1: Bot = {
+const nameOfYourBot1: ReplyBot = {
     username: "YourBotUsername", 
     password: "YourBotPassword",
     did: "did:plc:YourBotDid",
@@ -31,7 +31,7 @@ const nameOfYourBot1: Bot = {
     ]
 }
 
-const nameOfYourBot2: Bot = {
+const nameOfYourBot2: ConsentBot = {
     username: "YourBotUsername", 
     password: "YourBotPassword",
     did: "did:plc:YourBotDid",
@@ -50,7 +50,7 @@ const nameOfYourBot2: Bot = {
 
 Don't miss to add the bot to the export in `bot/index.ts`:
 ```
-export const bots: Bot[] = [nameOfYourBot1, nameOfYourBot2];
+export const bots: Array<ReplyBot | ConsentBot> = [nameOfYourBot1, nameOfYourBot2];
 ```
 
 ## Build first and run the bot
