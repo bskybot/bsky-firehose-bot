@@ -1,13 +1,14 @@
 import { bots } from './bot'
-import { ReplyBotFarm } from './bot/replyBotFarm';
+import { BotFarm } from './bot/botFarm';
 import { Logger } from './util/logger';
 
+/**
+ * Asynchronously initializes a bot farm from the provided `bots` configuration and logs a message indicating that the bot farm is running.
+ */
 const run = async () => {
-  await ReplyBotFarm.create(bots);
-
-  Logger.info(
-    `🤖 bot 🤖 farm 🤖 running 🤖`,
-  )
+  await BotFarm.create(bots);
+  Logger.info(`🤖 bot 🤖 farm 🤖 running 🤖`);
 }
 
-run()
+// Entry point for starting the bot farm
+run();

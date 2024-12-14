@@ -1,77 +1,41 @@
 import { AtpAgentOpts, BskyAgent } from '@atproto/api';
 import { ReplyBot } from '../types/bot';
-import type { FeedEntry } from "../types/feed";
+import type { Post } from "../types/post";
 import { buildReplyToPost, filterBotReplies } from '../util/botFunctions';
-import DatabaseHandler from '../util/databaseHandler';
-import type { ConvoView } from '@atproto/api/dist/client/types/chat/bsky/convo/defs';
 import { Logger } from '../util/logger';
 
+/**
+ * A specialized agent class extending `BskyAgent` that can "like" and reply to
+ * posts under certain conditions. It uses a `ReplyBot` configuration to determine
+ * how to respond.
+ */
 export class ReplyBotAgent extends BskyAgent {
-    private database: DatabaseHandler | null = null;
 
+    /**
+     * Creates a new instance of ReplyBotAgent.
+     * 
+     * @param opts - Options for the ATP agent.
+     * @param bot - A `ReplyBot` instance containing the username, password, DID, and reply patterns.
+     */
     constructor(public opts: AtpAgentOpts, public bot: ReplyBot) {
         super(opts);
     }
 
-    // Initialisiert die Datenbankverbindung
-    public async initDatabase(): Promise<void> {
-        if (!this.database) {
-            const dbName = 'bot_consent.db';
-            await DatabaseHandler.createDatabase(dbName);
-            this.database = new DatabaseHandler(dbName);
-            await this.database.connect();
-            await this.database.createTable(this.bot.username);
-        }
-    }
-
-    async handleConsent(did: string): Promise<void> {
-        await this.database!.deleteNoFollower(this.bot.username, did);
-        await this.database!.addRow(this.bot.username, did);
-
-        try {
-            const convoData = await this.getOrCreateConvo(did);
-            if (!convoData) {
-                return;
-            }
-
-            const convo = convoData.convo;
-
-            if(!await this.database?.hasDmSent(this.bot.username, did)) {
-                const dmSent = await this.sendMessage(convo.id, this.bot.consentDm!.consentQuestion);
-                if (!dmSent?.error) {
-                    await this.database!.updateDmSentDate(this.bot.username, did);
-                    Logger.info(`Consent DM sent to: ${did}`);
-                }
-            } else if(convo.lastMessage?.text === this.bot.consentDm?.consentAnswer) {
-                await this.database?.updateConsentDate(this.bot.username, did);
-            }
-        } catch (error) {
-            Logger.error(`Failed to send DM to ${did}:`, `${error}, ${this.bot.username}`);
-        }
-    };
-
-    private async getOrCreateConvo(did: string): Promise<{convo: ConvoView} | null> {
-        const response = await fetch(`https://api.bsky.chat/xrpc/chat.bsky.convo.getConvoForMembers?members=${this.bot.did}&members=${did}`, {
-            headers: { Authorization: `Bearer ${this.session?.accessJwt}` },
-        });
-
-        if (!response.ok) {
-            return null;
-        }
-        return await response.json();
-    }
-
-    private async sendMessage(convoId: string, text: string): Promise<any> {
-        const response = await fetch("https://api.bsky.chat/xrpc/chat.bsky.convo.sendMessage", {
-            method: "POST",
-            headers: { "Authorization": `Bearer ${this.session?.accessJwt}`, "Content-Type": "application/json"},
-            body: JSON.stringify({ convoId, message: { text } }),
-        });
-        return await response.json();
-    }
-
-    async likeAndReplyIfFollower(post: FeedEntry): Promise<void> {
-        if(post.authorDid === this.bot.did) {
+    /**
+     * Likes a post and replies to it if:
+     * 1. The post is not from the bot itself.
+     * 2. A suitable reply configuration exists for the post text.
+     * 3. The author of the post is followed by the bot.
+     * 
+     * If these conditions are met, this method:
+     * - Selects a random reply from the bot's configured replies.
+     * - Likes the post and sends the chosen reply.
+     * 
+     * @param post - The `FeedEntry` representing the post to analyze and potentially respond to.
+     * @returns A promise that resolves once the like and (if applicable) the reply have been sent.
+     */
+    async likeAndReplyIfFollower(post: Post): Promise<void> {
+        if (post.authorDid === this.bot.did) {
             return;
         }
 
@@ -80,15 +44,8 @@ export class ReplyBotAgent extends BskyAgent {
             return;
         }
 
-        const relations = await this.app.bsky.graph.getRelationships({actor: this.bot.did, others: [post.authorDid]});
-
-        if(!relations.data.relationships[0].followedBy) {
-            return;
-        }
-
-        if (this.bot.consentDm && !await this.database?.hasConsentDate(this.bot.username, post.authorDid)) {
-            Logger.info(`No consent given yet from: ${post.authorDid}`, this.bot.username);
-            this.handleConsent(post.authorDid);
+        const relations = await this.app.bsky.graph.getRelationships({ actor: this.bot.did, others: [post.authorDid] });
+        if (!relations.data.relationships[0].followedBy) {
             return;
         }
 
@@ -105,17 +62,24 @@ export class ReplyBotAgent extends BskyAgent {
     }
 }
 
-export const useReplyBotAgent = async (bot: ReplyBot, interval = 45000): Promise<ReplyBotAgent | null> => {
+/**
+ * Initializes a `ReplyBotAgent` for a given `ReplyBot` instance.
+ * 
+ * It attempts to log in using the credentials provided in the `bot`. If successful,
+ * it returns the agent instance; otherwise, it returns `null`.
+ * 
+ * @param bot - The `ReplyBot` with the required credentials (username, password, DID).
+ * @returns A promise that resolves to a `ReplyBotAgent` instance if login is successful,
+ *          or `null` otherwise.
+ */
+export const useReplyBotAgent = async (bot: ReplyBot): Promise<ReplyBotAgent | null> => {
     const agent = new ReplyBotAgent({ service: 'https://bsky.social' }, bot);
 
     try {
         const login = await agent.login({ identifier: bot.username, password: bot.password! });
-        if (!login.success){ 
-            return null;
-        }
 
-        if (bot.consentDm) {
-            await agent.initDatabase();
+        if (!login.success) { 
+            return null;
         }
 
         return agent;

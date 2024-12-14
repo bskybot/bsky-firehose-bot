@@ -1,4 +1,4 @@
-import { ReplyBot } from "../types/bot";
+import { ConsentBot, ReplyBot } from "../types/bot";
 
 const nameOfYourBot1: ReplyBot = {
     username: "YourBotUsername", 
@@ -17,7 +17,7 @@ const nameOfYourBot1: ReplyBot = {
     ]
 }
 
-const nameOfYourBot2: ReplyBot = {
+const nameOfYourBot2: ConsentBot = {
     username: "YourBotUsername", 
     password: "YourBotPassword",
     did: "did:plc:YourBotDid",
@@ -28,6 +28,7 @@ const nameOfYourBot2: ReplyBot = {
     replies: [
         {
             keyword: "another keywords phrase", 
+            exclude: ["word"],
             messages: ["reply1", "reply2", "reply3"]
         },
     ]
@@ -36,4 +37,4 @@ const nameOfYourBot2: ReplyBot = {
 
 // get the did at https://bsky.social/xrpc/com.atproto.identity.resolveHandle?handle=${YOUR_HANDLE}
 
-export const bots: ReplyBot[] = [nameOfYourBot1, nameOfYourBot2];
+export const bots: Array<ReplyBot | ConsentBot> = [nameOfYourBot1, nameOfYourBot2];
