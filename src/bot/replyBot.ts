@@ -44,21 +44,25 @@ export class ReplyBotAgent extends BskyAgent {
             return;
         }
 
-        const relations = await this.app.bsky.graph.getRelationships({ actor: this.bot.did, others: [post.authorDid] });
-        if (!relations.data.relationships[0].followedBy) {
-            return;
+        try {
+            const relations = await this.app.bsky.graph.getRelationships({ actor: this.bot.did, others: [post.authorDid] });
+            if (!relations.data.relationships[0].followedBy) {
+                return;
+            }
+
+            const replyCfg = replies[Math.floor(Math.random() * replies.length)];
+            const message = replyCfg.messages[Math.floor(Math.random() * replyCfg.messages.length)];
+            const reply = buildReplyToPost(
+                { uri: post.rootUri, cid: post.rootCid },
+                { uri: post.uri, cid: post.cid },
+                message
+            );
+
+            await Promise.all([this.like(post.uri, post.cid), this.post(reply)]);
+            Logger.info(`Replied to post: ${post.uri}`, this.bot.username);
+        } catch (error) {
+            Logger.error("Error while replying:", `${error}, ${this.bot.username}`);
         }
-
-        const replyCfg = replies[Math.floor(Math.random() * replies.length)];
-        const message = replyCfg.messages[Math.floor(Math.random() * replyCfg.messages.length)];
-        const reply = buildReplyToPost(
-            { uri: post.rootUri, cid: post.rootCid },
-            { uri: post.uri, cid: post.cid },
-            message
-        );
-
-        await Promise.all([this.like(post.uri, post.cid), this.post(reply)]);
-        Logger.info(`Replied to post: ${post.uri}`, this.bot.username);
     }
 }
 
