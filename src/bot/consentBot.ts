@@ -1,4 +1,4 @@
-import { AtpAgentOpts, BskyAgent } from '@atproto/api';
+import AtpAgent, { AtpAgentOptions } from '@atproto/api';
 import { ConsentBot } from '../types/bot';
 import type { Post } from "../types/post";
 import { buildReplyToPost, filterBotReplies } from '../util/botFunctions';
@@ -12,7 +12,7 @@ import { Logger } from '../util/logger';
  * It also integrates a database layer to track consent and ensure that the bot only interacts
  * with users who have granted consent.
  */
-export class ConsentBotAgent extends BskyAgent {
+export class ConsentBotAgent extends AtpAgent {
     private database: DatabaseHandler | null = null;
 
     /**
@@ -21,7 +21,7 @@ export class ConsentBotAgent extends BskyAgent {
      * @param opts - Options for the ATP agent.
      * @param bot - A `ConsentBot` instance containing the bot's credentials, DID, and consent configuration.
      */
-    constructor(public opts: AtpAgentOpts, public bot: ConsentBot) {
+    constructor(public opts: AtpAgentOptions, public bot: ConsentBot) {
         super(opts);
     }
 

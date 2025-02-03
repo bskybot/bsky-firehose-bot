@@ -1,0 +1,4 @@
+node_modules/
+dist/
+reactions.db
+bot/index.ts

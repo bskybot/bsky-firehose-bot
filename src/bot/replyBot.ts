@@ -1,4 +1,4 @@
-import { AtpAgentOpts, BskyAgent } from '@atproto/api';
+import AtpAgent, { AtpAgentOptions } from '@atproto/api';
 import { ReplyBot } from '../types/bot';
 import type { Post } from "../types/post";
 import { buildReplyToPost, filterBotReplies } from '../util/botFunctions';
@@ -9,7 +9,7 @@ import { Logger } from '../util/logger';
  * posts under certain conditions. It uses a `ReplyBot` configuration to determine
  * how to respond.
  */
-export class ReplyBotAgent extends BskyAgent {
+export class ReplyBotAgent extends AtpAgent {
 
     /**
      * Creates a new instance of ReplyBotAgent.
@@ -17,7 +17,7 @@ export class ReplyBotAgent extends BskyAgent {
      * @param opts - Options for the ATP agent.
      * @param bot - A `ReplyBot` instance containing the username, password, DID, and reply patterns.
      */
-    constructor(public opts: AtpAgentOpts, public bot: ReplyBot) {
+    constructor(public opts: AtpAgentOptions, public bot: ReplyBot) {
         super(opts);
     }
 

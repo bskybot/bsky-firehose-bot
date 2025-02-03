@@ -11,23 +11,23 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@atproto/api": "^0.12.29",
-    "@atproto/identity": "^0.4.3",
-    "@atproto/lexicon": "^0.4.3",
-    "@atproto/repo": "^0.5.5",
+    "@atproto/api": "^0.13.32",
+    "@atproto/identity": "^0.4.5",
+    "@atproto/lexicon": "^0.4.5",
+    "@atproto/repo": "^0.6.3",
     "@atproto/syntax": "^0.3.1",
-    "@atproto/xrpc-server": "^0.6.4",
-    "dotenv": "^16.4.5",
-    "express": "^4.21.1",
+    "@atproto/xrpc-server": "^0.7.9",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
     "multiformats": "^13.3.1",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
     "ws": "^8.18.0"
   },
   "devDependencies": {
-    "@types/node": "^22.9.3",
-    "globals": "^15.13.0",
+    "@types/node": "^22.13.0",
+    "globals": "^15.14.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.3"
   }
 }
